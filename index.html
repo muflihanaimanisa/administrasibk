@@ -122,18 +122,26 @@ ed=null;_ld=null;sel=[];alert('Kegiatan tersimpan.');await load();go('daf')}
 const can=k=>isK()||k.guru==U.id;
 const getCat=async id=>(await sb.from('kegiatan_catatan').select('catatan').eq('kegiatan_id',id).maybeSingle()).data?.catatan||'';
 async function editK(id){CAT=await getCat(id);ed=id;_ld=null;go('inp')}
-function daf(){const L=list().filter(k=>!q||JSON.stringify([k.str,tp(k),k.tujuan,k.sis.map(i=>sw(i)?.nama),gn(k.guru)]).toLowerCase().includes(q.toLowerCase()));
+const dafList=()=>list().filter(k=>!q||JSON.stringify([k.str,tp(k),k.tujuan,k.sis.map(i=>sw(i)?.nama),gn(k.guru)]).toLowerCase().includes(q.toLowerCase()));
+function daf(){const L=dafList();
 return`<h2>Daftar Layanan</h2>${fbar()}<div class="fl np"><input placeholder="Cari…" value="${esc(q)}" onchange="q=this.value;go()"><button class="b" onclick="window.print()">Cetak</button><button class="b s" onclick="ekspor()">Ekspor Excel</button></div>
 ${kop('REKAPITULASI LAYANAN BIMBINGAN DAN KONSELING',`<p style="color:#000">Periode: ${FL.d1||'-'} s.d. ${FL.d2||'-'} ${FL.sem?'· Semester '+FL.sem:''}</p>`)}
 <div class="box">${L.length?`<table><tr><th>Tanggal</th><th>Sem.</th><th>Guru BK</th><th>Strategi</th><th>Bidang</th><th>Kelas</th><th>Siswa</th><th>Topik</th><th>Tujuan</th><th>Tindak Lanjut</th><th class="np"></th></tr>${L.map(k=>`<tr><td>${k.tgl}</td><td>${k.sem}</td><td>${esc(gn(k.guru))}</td><td>${esc(k.str)}</td><td>${esc(k.bid)}</td><td>${esc(k.kelas.join(', '))}</td><td>${esc(k.sis.map(i=>sw(i)?.nama).join('; '))||'-'}</td><td>${esc(tp(k))}</td><td>${esc(k.tujuan)}</td><td>${esc(k.tl)}</td><td class="np"><button class="b s" onclick="det('${k.id}')">Detail</button> ${can(k)?`<button class="b s" onclick="editK('${k.id}')">Edit</button> <button class="d b" onclick="hps('${k.id}')">Hapus</button>`:''}</td></tr>`).join('')}</table>`:'<div class="kosong">Belum ada data</div>'}</div>${ttd('Guru BK','Guru BK / Koordinator BK',isK()?S.set.koordinator:U.nama)}`}
 async function det(id){const k=S.keg.find(x=>x.id==id),c=can(k)?await getCat(id):null;$('#dlg').innerHTML=`<h3>${esc(k.str)} – ${k.tgl}</h3><p>Guru BK: ${esc(gn(k.guru))}<br>Kelas: ${esc(k.kelas.join(', '))}<br>Topik: ${esc(tp(k))}<br>Tujuan: ${esc(k.tujuan)}<br>Tindak lanjut: ${esc(k.tl)}<br>Keterangan: ${esc(k.ket)}</p>${c!==null?`<p><b>Catatan:</b> ${esc(c)||'-'}</p>`:'<p class="kosong">Catatan konseling hanya untuk pencatat dan Koordinator BK.</p>'}${k.dok?`<p><a href="#" onclick="dok('${esc(k.dok)}');return false">Dokumentasi</a></p>`:''}<button class="b" onclick="$('#dlg').close()">Tutup</button>`;$('#dlg').showModal()}
 async function hps(id){if(confirm('Hapus kegiatan ini?')&&!bad(await sb.from('kegiatan').delete().eq('id',id)))reload()}
-function ekspor(){const L=list(),H=['Tanggal','Semester','Guru BK','Strategi Layanan','Bidang Layanan','Kelas','Nama Siswa','Topik Masalah','Tujuan','Tindak Lanjut'];
-const wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n);
-add('Data Kegiatan',[H,...L.map(k=>[k.tgl,k.sem,gn(k.guru),k.str,k.bid,k.kelas.join(', '),k.sis.map(i=>sw(i)?.nama).join('; '),tp(k),k.tujuan,k.tl])]);
-add('Ringkasan',[['Jumlah Kegiatan Layanan',L.length],['Jumlah Siswa Terlayani',new Set(L.flatMap(k=>k.sis)).size]]);
-for(const[n,f]of[['Per Guru BK',k=>gn(k.guru)],['Per Kelas',k=>k.kelas],['Strategi Layanan',k=>k.str],['Topik Masalah',tp]])add(n,[['Nama','Jumlah Kegiatan'],...Object.entries(cnt(L,f))]);
-XLSX.writeFile(wb,'laporan-bk.xlsx')}
+const tglF=t=>t?t.split('-').reverse().join('/'):'';
+async function ekspor(){const L=dafList();if(!L.length)return alert('Tidak ada data untuk diekspor.');
+const paths=[...new Set(L.map(k=>k.dok).filter(Boolean))],urls={};
+if(paths.length){const r=await sb.storage.from('dokumentasi').createSignedUrls(paths,86400);(r.data||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
+const H=['No.','Tanggal Pelaksanaan','Nama Guru BK','Nama Siswa','Kelas','Strategi Layanan','Bidang Layanan','Topik Layanan','Materi Layanan','Tindak Lanjut','Dokumentasi'],rows=[],docs=[];
+L.forEach(k=>{const nf=k.dok?k.dok.split('/').pop().replace(/^\d+_/,''):'',ss=k.sis.map(i=>sw(i)).filter(Boolean),kl=[...new Set(ss.map(x=>x.kelas))],multi=kl.length>1;
+rows.push([rows.length+1,tglF(k.tgl),gn(k.guru),ss.map(x=>multi?x.nama+' ('+x.kelas+')':x.nama).join('; '),ss.length?kl.join(', '):k.kelas.join(', '),k.str,k.bid,tp(k),k.tujuan,k.tl,nf]);docs.push(k.dok)});
+const ws=XLSX.utils.aoa_to_sheet([H,...rows]);
+ws['!cols']=[5,14,22,26,12,30,14,30,38,30,30].map(wch=>({wch}));
+docs.forEach((d,i)=>{if(d&&urls[d]){const c=ws['K'+(i+2)];if(c)c.l={Target:urls[d],Tooltip:'Tautan berlaku 24 jam'}}});
+const rs=XLSX.utils.aoa_to_sheet([['Jumlah Kegiatan Layanan',L.length],['Jumlah Siswa Terlayani',new Set(L.flatMap(k=>k.sis)).size]]);rs['!cols']=[{wch:32},{wch:12}];
+const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Daftar Layanan');XLSX.utils.book_append_sheet(wb,rs,'Ringkasan');
+XLSX.writeFile(wb,'Daftar_Layanan_SAHABAT_BK.xlsx')}
 function riw(){const A=S.siswa.filter(s=>s.nama.toLowerCase().includes(q.toLowerCase())).sort(cmpS);const h=`<h2>Riwayat Layanan Siswa</h2><div class="fl np"><input placeholder="Cari siswa…" value="${esc(q)}" onchange="q=this.value;go()"></div>`;
 if(hid){const s=sw(hid),L=S.keg.filter(k=>k.sis.includes(hid)).sort((a,b)=>b.tgl.localeCompare(a.tgl));
 return h+`<div class="np"><button class="b s" onclick="hid=null;go()">Kembali</button> <button class="b" onclick="window.print()">Cetak</button></div>${kop('RIWAYAT LAYANAN BIMBINGAN DAN KONSELING',`<p style="color:#000">Nama: ${esc(s.nama)} · NIS: ${esc(s.nis||'-')} · Kelas: ${esc(s.kelas)}</p>`)}<div class="box"><h3 class="np">${esc(s.nama)} (${esc(s.kelas)})</h3>${L.length?`<table><tr><th>Tanggal</th><th>Strategi</th><th>Bidang</th><th>Topik</th><th>Tindak Lanjut</th></tr>${L.map(k=>`<tr><td>${k.tgl}</td><td>${esc(k.str)}</td><td>${esc(k.bid)}</td><td>${esc(tp(k))}</td><td>${esc(k.tl)}</td></tr>`).join('')}</table>`:'<div class="kosong">Belum ada data</div>'}</div>${ttd('Guru BK','Guru BK',isK()?'':U.nama)}`}
@@ -144,11 +152,22 @@ return`<h2>Rekapitulasi per Kelas & Statistik</h2>${fbar()}<div class="fl np"><b
 <div class="k"><div><b>${L.length}</b><span>Jumlah Kegiatan Layanan</span></div><div><b>${new Set(L.flatMap(k=>k.sis)).size}</b><span>Jumlah Siswa Terlayani</span></div></div>
 <div class="box">${ks.length?`<table><tr><th>Kelas</th><th>Jumlah Kegiatan</th><th>Jumlah Siswa Terlayani</th></tr>${ks.map(c=>`<tr><td>${esc(c)}</td><td>${L.filter(k=>k.kelas.includes(c)).length}</td><td>${new Set(L.flatMap(k=>k.sis).filter(i=>sw(i)?.kelas==c)).size}</td></tr>`).join('')}<tr><th>Total kegiatan</th><th>${L.length}</th><th></th></tr></table>`:'<div class="kosong">Belum ada data</div>'}</div>
 <div class="g"><div class="box"><h3>Per Guru BK</h3>${bars(cnt(L,k=>gn(k.guru)))}</div><div class="box"><h3>Per Strategi Layanan</h3>${bars(cnt(L,k=>k.str))}</div><div class="box"><h3>Per Topik Masalah</h3>${bars(cnt(L,tp))}</div><div class="box"><h3>Per Bidang Layanan</h3>${bars(cnt(L,k=>k.bid))}</div></div>${ttd('Koordinator BK','Koordinator BK',S.set.koordinator)}`}
-function sis(){if(!isK())return'<h2>Data Siswa</h2><div class="kosong">Hanya Koordinator BK.</div>';const A=S.siswa.filter(s=>s.nama.toLowerCase().includes(q.toLowerCase())).sort(cmpS);
+var shI=false;
+function sis(){if(!isK())return'<h2>Data Siswa</h2><div class="kosong">Hanya Koordinator BK.</div>';const A=S.siswa.filter(s=>(shI||s.aktif)&&s.nama.toLowerCase().includes(q.toLowerCase())).sort(cmpS);
 return`<h2>Data Siswa</h2><div class="box"><div class="fl"><label>Nama<input id="n_n"></label><label>NIS<input id="n_i"></label><label>Kelas<input id="n_k" placeholder="mis. X-1"></label><button class="b" onclick="addS()">Tambah siswa</button></div>
-<label>Impor Excel/CSV (kolom: Nama, NIS, Kelas)<input type="file" accept=".xlsx,.xls,.csv" onchange="imp(this)"></label></div>
+<label>Impor Excel/CSV (kolom: Nama, NIS, Kelas)<input type="file" accept=".xlsx,.xls,.csv" onchange="imp(this)"></label>
+<p><button class="d b" onclick="hapusSemua()">Hapus permanen semua siswa (${S.siswa.length})</button> <label style="font-size:13px"><input type="checkbox" ${shI?'checked':''} onchange="shI=this.checked;go()"> Tampilkan siswa nonaktif</label></p></div>
 <div class="fl"><input placeholder="Cari nama siswa…" value="${esc(q)}" onchange="q=this.value;go()"></div>${group(A,s=>s.aktif?`<button class="d b" onclick="act('${s.id}',false)">Hapus</button>`:`<button class="b s" onclick="act('${s.id}',true)">Aktifkan</button>`)}`}
 async function addS(){const n=$('#n_n').value.trim(),k=$('#n_k').value.trim();if(!n||!k)return alert('Nama dan kelas wajib diisi.');if(!bad(await sb.from('siswa').insert({nama:n,nis:$('#n_i').value.trim()||null,kelas:k})))reload()}
+async function hapusSemua(){const n=S.siswa.length;if(!n)return alert('Tidak ada data siswa.');
+const links=S.keg.reduce((t,k)=>t+k.sis.length,0),mk=S.keg.filter(k=>k.sis.length).length;
+let m=`HAPUS PERMANEN seluruh ${n} data siswa (termasuk yang nonaktif)?\n\nTindakan ini TIDAK DAPAT dibatalkan.`;
+if(links)m+=`\n\nPERHATIAN: ${links} keterkaitan siswa pada ${mk} kegiatan akan ikut terhapus. Kegiatan tetap ada, tetapi daftar siswanya hilang: Riwayat Siswa dan Jumlah Siswa Terlayani akan berubah. Disarankan ekspor Daftar Layanan terlebih dahulu.`;
+if(!confirm(m))return;if(prompt('Ketik HAPUS PERMANEN untuk melanjutkan:')!=='HAPUS PERMANEN')return alert('Dibatalkan.');
+if(links&&bad(await sb.from('kegiatan_peserta').delete().not('siswa_id','is',null)))return;
+const r=await sb.from('siswa').delete({count:'exact'}).not('id','is',null);if(bad(r))return;
+if(!r.count)return alert('Tidak ada siswa yang terhapus. Pastikan SQL kebijakan hapus (s_del) sudah dijalankan di Supabase.');
+alert(r.count+' siswa dihapus permanen. Silakan impor data siswa terbaru.');reload()}
 async function act(id,a){const s=sw(id);if(!a&&!confirm(`Hapus ${s.nama} (${s.kelas})?\nSiswa dinonaktifkan; riwayat layanan tetap tersimpan.`))return;if(!bad(await sb.from('siswa').update({aktif:a}).eq('id',id)))reload()}
 function imp(el){const f=el.files[0];if(!f)return;const r=new FileReader;r.onload=async()=>{const wb=XLSX.read(r.result,{type:'array'}),rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]),nw=[];let up=0;
 for(const o of rows){const g=(...ks)=>{for(const k in o)if(ks.includes(k.trim().toLowerCase()))return String(o[k]).trim();return''},nama=g('nama','nama siswa'),nis=g('nis'),kelas=g('kelas');if(!nama||!kelas)continue;
