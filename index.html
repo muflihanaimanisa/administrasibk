@@ -39,6 +39,16 @@ dialog{max-width:640px;width:92%;background:var(--sf);color:var(--tx);border:1px
 .ttd3{justify-content:space-between;gap:24px;margin-top:22px;text-align:center;color:#000;break-inside:avoid}.ttd3>div{flex:1}.sp{height:22mm}
 @page rw{size:A4 landscape;margin:12mm}
 @media print{.pk.kp,.pk.ttd3{display:flex}#rp{page:rw}.rt{min-width:0;font-size:11px;color:#000}.rt th,.rt td{border:1px solid #000;padding:4px 5px}.rt th{background:#eee;color:#000}.rt thead{display:table-header-group}.rt tr{break-inside:avoid}.kp img{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+body.lg header,body.lg nav{display:none}body.lg main{max-width:none;padding:0}
+.lgw{display:grid;grid-template-columns:1.1fr 1fr;min-height:100vh}
+.lgi{position:relative;background:#cfe3f2 url(login-bg.jpg) center/cover no-repeat;min-height:210px}
+.lgi::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(10,40,70,.8),rgba(10,40,70,0) 45%)}
+.lgc{position:absolute;left:32px;right:32px;bottom:32px;z-index:1;color:#fff}
+.lgq{font:700 clamp(19px,2.4vw,30px)/1.25 Georgia,'Times New Roman',serif}.lgs{font-size:14px;opacity:.92;margin-top:6px}
+.lgf{display:flex;align-items:center;justify-content:center;padding:28px;background:var(--bg)}.lgp{width:100%;max-width:420px}
+.lgh{display:flex;gap:14px;align-items:center;margin-bottom:22px;color:var(--pr)}.lgh img{height:64px;width:auto}.lgh .ha::before{background:#d99a1e}
+.lgp #login{margin:0;max-width:none}.lgh .hk{font-size:clamp(14px,4.3vw,18px)}.lgh img{height:58px}
+@media(max-width:800px){.lgw{grid-template-columns:1fr}.lgc{left:18px;right:18px;bottom:16px}.lgs{font-size:12px}}
 </style></head><body>
 <header><div><div class="hk">BIMBINGAN DAN KONSELING</div><div class="hk">SMAN 15 BANDUNG</div><div class="ha"><b>SAHABAT BK</b></div><div class="ht">BK sahabat siswa, hadir untuk setiap cerita.</div></div><div id="who" class="np"></div></header>
 <nav id="nav" class="np"></nav><main id="app"></main><dialog id="dlg"></dialog>
@@ -73,13 +83,13 @@ function bars(m){const e=Object.entries(m).sort((a,b)=>b[1]-a[1]);if(!e.length)r
 const cnt=(L,f)=>{const m={};L.forEach(k=>[].concat(f(k)).forEach(x=>x&&(m[x]=(m[x]||0)+1)));return m};
 const kop=(t,x='')=>`<div class="pk"><div class="kop"><b>PEMERINTAH DAERAH PROVINSI JAWA BARAT</b><b>${esc(S.set.sekolah)}</b>${esc([S.set.alamat,S.set.kode_pos,S.set.kontak].filter(Boolean).join(' · '))}</div><h3 style="text-align:center;color:#000">${t}</h3>${x}<p style="color:#000">Dicetak: ${new Date().toLocaleDateString('id-ID')}</p></div>`;
 const ttd=(a,b,n)=>`<div class="ttd pk"><div>Kepala Sekolah<br><br><br><br><u>${esc(S.set.kepsek||'..........')}</u><br>NIP ${esc(S.set.nip_kepsek||'..........')}</div><div>${a}<br><br><br><br><u>${esc(n||'..........')}</u><br>${b}</div></div><p class="pk" style="text-align:center;color:#000;margin-top:30px">Tahun Ajaran ${esc(S.set.tahun_ajaran)}</p>`;
-function login(msg=''){$('#nav').innerHTML='';$('#who').innerHTML='';$('#app').innerHTML=`<div id="login" class="box"><h2>Masuk</h2><div class="f"><label>Email<input id="le" type="email" autocomplete="username"></label><label>Kata sandi<input id="lp" type="password" autocomplete="current-password" onkeydown="if(event.key=='Enter')doLogin()"></label></div><p style="color:var(--dn)">${esc(msg)}</p><button class="b" onclick="doLogin()">Masuk</button><p class="kosong">Akun dibuat oleh Koordinator BK melalui Supabase.</p></div>`}
+function login(msg=''){$('#nav').innerHTML='';$('#who').innerHTML='';document.body.classList.add('lg');$('#app').innerHTML=`<div class="lgw"><div class="lgi"><div class="lgc"><div class="lgq">“BK sahabat siswa, hadir untuk setiap cerita.”</div><div class="lgs">Sistem Administrasi dan Layanan Bimbingan dan Konseling · SMAN 15 Bandung</div></div></div><div class="lgf"><div class="lgp"><div class="lgh"><img src="Logo_SMAN_15_Bandung_png.webp" alt="Logo SMAN 15 Bandung"><div><div class="hk">BIMBINGAN DAN KONSELING</div><div class="hk">SMAN 15 BANDUNG</div><div class="ha"><b>SAHABAT BK</b></div></div></div><div id="login" class="box"><h2>Masuk</h2><div class="f"><label>Email<input id="le" type="email" autocomplete="username"></label><label>Kata sandi<input id="lp" type="password" autocomplete="current-password" onkeydown="if(event.key=='Enter')doLogin()"></label></div><p style="color:var(--dn)">${esc(msg)}</p><button class="b" onclick="doLogin()">Masuk</button><p class="kosong">Akun dibuat oleh Koordinator BK melalui Supabase.</p></div></div></div></div>`}
 async function doLogin(){const r=await sb.auth.signInWithPassword({email:$('#le').value.trim(),password:$('#lp').value});if(r.error)return login('Email atau kata sandi salah.');await start()}
 async function start(){const{data}=await sb.auth.getSession();if(!data.session)return login();$('#app').innerHTML='<p class="kosong">Memuat data…</p>';
 const p=await sb.from('profiles').select('*').eq('id',data.session.user.id).maybeSingle();if(!p.data){await sb.auth.signOut();return login('Akun belum memiliki profil BK.')}U=p.data;await load();go()}
 async function logout(){await sb.auth.signOut();U=null;login()}
 const MENU=[['dash','Dashboard'],['inp','Input Layanan'],['daf','Daftar Layanan'],['riw','Riwayat Layanan'],['rek','Rekapitulasi & Statistik'],['sis','Data Siswa'],['gur','Data Guru BK'],['set','Pengaturan']];
-function go(v){if(v){V=v;hid=null}if(!U)return login();$('#who').innerHTML=`${esc(U.nama)} (${U.role=='koordinator'?'Koordinator BK':'Guru BK'}) <button class="b s" onclick="logout()">Keluar</button>`;
+function go(v){document.body.classList.remove('lg');if(v){V=v;hid=null}if(!U)return login();$('#who').innerHTML=`${esc(U.nama)} (${U.role=='koordinator'?'Koordinator BK':'Guru BK'}) <button class="b s" onclick="logout()">Keluar</button>`;
 $('#nav').innerHTML=MENU.filter(m=>isK()||!['gur','set'].includes(m[0])).map(m=>`<button class="${V==m[0]?'on':''}" onclick="go('${m[0]}')">${m[1]}</button>`).join('');
 $('#app').innerHTML=({dash,inp,daf,riw,rek,sis,gur,set})[V]();if(V=='inp')pil()}
 const reload=async()=>{await load();go()};
