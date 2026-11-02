@@ -32,7 +32,7 @@ dialog{max-width:640px;width:92%;background:var(--sf);color:var(--tx);border:1px
 .kop{text-align:center;border-bottom:3px double #000;padding-bottom:6px;margin-bottom:10px;color:#000}.kop b{display:block;font-size:16px}
 .ttd{display:flex;justify-content:space-around;margin-top:40px;text-align:center;color:#000}.ttd div{width:40%}
 #login{max-width:420px;margin:10vh auto}
-header .sk{font-weight:800;letter-spacing:.06em;font-size:14px;opacity:1;margin:1px 0 2px}
+.hk{font-size:clamp(16px,4.8vw,22px);font-weight:700;letter-spacing:.03em;line-height:1.25}.hk+.hk{font-weight:800}.ha{position:relative;margin-top:10px;padding-top:9px;font-size:14px;letter-spacing:.06em}.ha::before{content:'';position:absolute;top:0;left:0;width:38px;height:3px;border-radius:2px;background:#e3a62a}.ha b{font-size:14px}.ht{font-size:12.5px;opacity:.9}
 .kp{align-items:center;gap:12px;border-bottom:3px double #000;padding-bottom:6px;margin-bottom:10px;color:#000}
 .kp img{height:24mm;width:auto;max-width:30mm;object-fit:contain}.kt{flex:1;text-align:center;line-height:1.35}.kt b{display:block;font-size:19px}.kt small{display:block}
 .rt{table-layout:fixed;min-width:1100px}.rt td,.rt th{overflow-wrap:anywhere}
@@ -40,7 +40,7 @@ header .sk{font-weight:800;letter-spacing:.06em;font-size:14px;opacity:1;margin:
 @page rw{size:A4 landscape;margin:12mm}
 @media print{.pk.kp,.pk.ttd3{display:flex}#rp{page:rw}.rt{min-width:0;font-size:11px;color:#000}.rt th,.rt td{border:1px solid #000;padding:4px 5px}.rt th{background:#eee;color:#000}.rt thead{display:table-header-group}.rt tr{break-inside:avoid}.kp img{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style></head><body>
-<header><div><b>SAHABAT BK</b><small class="sk">SMAN 15 BANDUNG</small><small>BK sahabat siswa, hadir untuk setiap cerita.</small></div><div id="who" class="np"></div></header>
+<header><div><div class="hk">BIMBINGAN DAN KONSELING</div><div class="hk">SMAN 15 BANDUNG</div><div class="ha"><b>SAHABAT BK</b></div><div class="ht">BK sahabat siswa, hadir untuk setiap cerita.</div></div><div id="who" class="np"></div></header>
 <nav id="nav" class="np"></nav><main id="app"></main><dialog id="dlg"></dialog>
 <script>
 const SB_URL='https://oamqjxvddrvyonfingca.supabase.co',SB_KEY='sb_publishable_esPDDMYqiMbQnLQCeQOCKA_lvtkuByz';
