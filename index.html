@@ -32,8 +32,15 @@ dialog{max-width:640px;width:92%;background:var(--sf);color:var(--tx);border:1px
 .kop{text-align:center;border-bottom:3px double #000;padding-bottom:6px;margin-bottom:10px;color:#000}.kop b{display:block;font-size:16px}
 .ttd{display:flex;justify-content:space-around;margin-top:40px;text-align:center;color:#000}.ttd div{width:40%}
 #login{max-width:420px;margin:10vh auto}
+header .sk{font-weight:800;letter-spacing:.06em;font-size:14px;opacity:1;margin:1px 0 2px}
+.kp{align-items:center;gap:12px;border-bottom:3px double #000;padding-bottom:6px;margin-bottom:10px;color:#000}
+.kp img{height:24mm;width:auto;max-width:30mm;object-fit:contain}.kt{flex:1;text-align:center;line-height:1.35}.kt b{display:block;font-size:19px}.kt small{display:block}
+.rt{table-layout:fixed;min-width:1100px}.rt td,.rt th{overflow-wrap:anywhere}
+.ttd3{justify-content:space-between;gap:24px;margin-top:22px;text-align:center;color:#000;break-inside:avoid}.ttd3>div{flex:1}.sp{height:22mm}
+@page rw{size:A4 landscape;margin:12mm}
+@media print{.pk.kp,.pk.ttd3{display:flex}#rp{page:rw}.rt{min-width:0;font-size:11px;color:#000}.rt th,.rt td{border:1px solid #000;padding:4px 5px}.rt th{background:#eee;color:#000}.rt thead{display:table-header-group}.rt tr{break-inside:avoid}.kp img{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style></head><body>
-<header><div><b>SAHABAT BK</b><small>BK sahabat siswa, hadir untuk setiap cerita.</small></div><div id="who" class="np"></div></header>
+<header><div><b>SAHABAT BK</b><small class="sk">SMAN 15 BANDUNG</small><small>BK sahabat siswa, hadir untuk setiap cerita.</small></div><div id="who" class="np"></div></header>
 <nav id="nav" class="np"></nav><main id="app"></main><dialog id="dlg"></dialog>
 <script>
 const SB_URL='https://oamqjxvddrvyonfingca.supabase.co',SB_KEY='sb_publishable_esPDDMYqiMbQnLQCeQOCKA_lvtkuByz';
@@ -71,7 +78,7 @@ async function doLogin(){const r=await sb.auth.signInWithPassword({email:$('#le'
 async function start(){const{data}=await sb.auth.getSession();if(!data.session)return login();$('#app').innerHTML='<p class="kosong">Memuat data…</p>';
 const p=await sb.from('profiles').select('*').eq('id',data.session.user.id).maybeSingle();if(!p.data){await sb.auth.signOut();return login('Akun belum memiliki profil BK.')}U=p.data;await load();go()}
 async function logout(){await sb.auth.signOut();U=null;login()}
-const MENU=[['dash','Dashboard'],['inp','Input Layanan'],['daf','Daftar Layanan'],['riw','Riwayat Siswa'],['rek','Rekapitulasi & Statistik'],['sis','Data Siswa'],['gur','Data Guru BK'],['set','Pengaturan']];
+const MENU=[['dash','Dashboard'],['inp','Input Layanan'],['daf','Daftar Layanan'],['riw','Riwayat Layanan'],['rek','Rekapitulasi & Statistik'],['sis','Data Siswa'],['gur','Data Guru BK'],['set','Pengaturan']];
 function go(v){if(v){V=v;hid=null}if(!U)return login();$('#who').innerHTML=`${esc(U.nama)} (${U.role=='koordinator'?'Koordinator BK':'Guru BK'}) <button class="b s" onclick="logout()">Keluar</button>`;
 $('#nav').innerHTML=MENU.filter(m=>isK()||!['gur','set'].includes(m[0])).map(m=>`<button class="${V==m[0]?'on':''}" onclick="go('${m[0]}')">${m[1]}</button>`).join('');
 $('#app').innerHTML=({dash,inp,daf,riw,rek,sis,gur,set})[V]();if(V=='inp')pil()}
@@ -142,10 +149,26 @@ docs.forEach((d,i)=>{if(d&&urls[d]){const c=ws['K'+(i+2)];if(c)c.l={Target:urls[
 const rs=XLSX.utils.aoa_to_sheet([['Jumlah Kegiatan Layanan',L.length],['Jumlah Siswa Terlayani',new Set(L.flatMap(k=>k.sis)).size]]);rs['!cols']=[{wch:32},{wch:12}];
 const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Daftar Layanan');XLSX.utils.book_append_sheet(wb,rs,'Ringkasan');
 XLSX.writeFile(wb,'Daftar_Layanan_SAHABAT_BK.xlsx')}
-function riw(){const A=S.siswa.filter(s=>s.nama.toLowerCase().includes(q.toLowerCase())).sort(cmpS);const h=`<h2>Riwayat Layanan Siswa</h2><div class="fl np"><input placeholder="Cari siswa…" value="${esc(q)}" onchange="q=this.value;go()"></div>`;
-if(hid){const s=sw(hid),L=S.keg.filter(k=>k.sis.includes(hid)).sort((a,b)=>b.tgl.localeCompare(a.tgl));
-return h+`<div class="np"><button class="b s" onclick="hid=null;go()">Kembali</button> <button class="b" onclick="window.print()">Cetak</button></div>${kop('RIWAYAT LAYANAN BIMBINGAN DAN KONSELING',`<p style="color:#000">Nama: ${esc(s.nama)} · NIS: ${esc(s.nis||'-')} · Kelas: ${esc(s.kelas)}</p>`)}<div class="box"><h3 class="np">${esc(s.nama)} (${esc(s.kelas)})</h3>${L.length?`<table><tr><th>Tanggal</th><th>Strategi</th><th>Bidang</th><th>Topik</th><th>Tindak Lanjut</th></tr>${L.map(k=>`<tr><td>${k.tgl}</td><td>${esc(k.str)}</td><td>${esc(k.bid)}</td><td>${esc(tp(k))}</td><td>${esc(k.tl)}</td></tr>`).join('')}</table>`:'<div class="kosong">Belum ada data</div>'}</div>${ttd('Guru BK','Guru BK',isK()?'':U.nama)}`}
-return h+group(A,s=>`<button class="b s" onclick="hid='${s.id}';go()">Lihat</button>`)}
+var rq={kelas:'',nama:'',go:false};
+const rKelas=()=>[...new Set(S.siswa.map(s=>s.kelas))].sort((a,b)=>a.localeCompare(b,'id',{numeric:true}));
+function rRows(){const nm=rq.nama.toLowerCase(),o=[];S.keg.forEach(k=>k.sis.forEach(id=>{const s=sw(id);if(!s||(rq.kelas&&s.kelas!=rq.kelas)||(nm&&!s.nama.toLowerCase().includes(nm)))return;o.push({k,s})}));
+return o.sort((a,b)=>b.k.tgl.localeCompare(a.k.tgl)||a.s.kelas.localeCompare(b.s.kelas,'id',{numeric:true})||a.s.nama.localeCompare(b.s.nama,'id'))}
+function rCari(){const k=$('#r_k').value,n=$('#r_n').value.trim();if(!k&&!n)return alert('Pilih kelas dan/atau masukkan nama siswa.');rq={kelas:k,nama:n,go:true};go()}
+function rReset(){rq={kelas:'',nama:'',go:false};go()}
+const kopR=()=>`<div class="pk kp"><img src="logo_prov.png" alt="Logo Provinsi Jawa Barat"><div class="kt"><div>PEMERINTAH PROVINSI JAWA BARAT</div><div>DINAS PENDIDIKAN PROVINSI JAWA BARAT</div><b>SMAN 15 BANDUNG</b><small>${esc([S.set.alamat,S.set.kode_pos,S.set.kontak].filter(Boolean).join(' · '))}</small></div><img src="Logo_SMAN_15_Bandung_png.webp" alt="Logo SMAN 15 Bandung"></div>`;
+const sgn=(t,n,p)=>`<div>${t}<div class="sp"></div><b><u>${esc(n||'.............................')}</u></b><br>NIP. ${esc(p||'.....................')}</div>`;
+function riw(){const form=`<div class="fl np"><label>Kelas<select id="r_k">${opt(rKelas(),rq.kelas,1)}</select></label><label>Nama siswa<input id="r_n" value="${esc(rq.nama)}" placeholder="sebagian nama" onkeydown="if(event.key=='Enter')rCari()"></label><button class="b" onclick="rCari()">Cari</button><button class="b s" onclick="rReset()">Reset</button></div>`;
+const h=`<h2 class="np">Riwayat Layanan</h2>${form}`;
+if(!rq.go)return h+'<div class="kosong np">Silakan pilih kelas dan/atau masukkan nama siswa untuk melihat riwayat layanan.</div>';
+const R=rRows();if(!R.length)return h+'<div class="box np"><div class="kosong">Data riwayat layanan tidak ditemukan.</div></div>';
+const ids=[...new Set(R.map(r=>r.k.guru))],gb=isK()?(ids.length==1?S.guru.find(g=>g.id==ids[0]):null):(S.guru.find(g=>g.id==U.id)||U);
+const W=[4,8,9,13,8,15,6,12,13,12];
+return h+`<div id="rp"><div class="np" style="margin-bottom:10px"><button class="b" onclick="window.print()">Cetak</button> <span class="kosong">${R.length} baris riwayat</span></div>${kopR()}
+<h3 class="pk" style="text-align:center;color:#000;margin:6px 0">LAPORAN RIWAYAT LAYANAN BIMBINGAN DAN KONSELING</h3>
+<p class="pk" style="color:#000;font-size:12px;margin:0 0 8px">Kelas: ${esc(rq.kelas||'Semua')} · Nama siswa: ${esc(rq.nama||'Semua')} · Dicetak: ${new Date().toLocaleDateString('id-ID')}</p>
+<div class="box"><table class="rt"><colgroup>${W.map(w=>`<col style="width:${w}%">`).join('')}</colgroup><thead><tr><th>No.</th><th>Tanggal</th><th>Semester</th><th>Strategi Layanan</th><th>Bidang Layanan</th><th>Nama Siswa</th><th>Kelas</th><th>Topik Layanan</th><th>Tujuan Layanan</th><th>Tindak Lanjut</th></tr></thead><tbody>${R.map((r,i)=>`<tr><td>${i+1}</td><td>${tglF(r.k.tgl)}</td><td>${esc(r.k.sem)}</td><td>${esc(r.k.str)}</td><td>${esc(r.k.bid||'-')}</td><td>${esc(r.s.nama)}</td><td>${esc(r.s.kelas)}</td><td>${esc(tp(r.k)||'-')}</td><td>${esc(r.k.tujuan||'-')}</td><td>${esc(r.k.tl||'-')}</td></tr>`).join('')}</tbody></table></div>
+<div class="pk ttd3">${sgn('Mengetahui,<br>Kepala SMAN 15 Bandung',S.set.kepsek,S.set.nip_kepsek)}${sgn('<br>Guru BK',gb&&gb.nama,gb&&gb.nip)}${sgn('<br>Koordinator BK',S.set.koordinator,S.set.nip_koordinator)}</div>
+<div class="pk" style="text-align:center;font-size:11px;color:#000;margin-top:10px">Tahun Ajaran ${esc(S.set.tahun_ajaran)}</div></div>`}
 function group(A,act){if(!A.length)return'<div class="kosong">Belum ada data siswa</div>';let o='',c;A.forEach(s=>{if(s.kelas!=c){c=s.kelas;o+=`<h3>Kelas ${esc(c)}</h3>`}o+=`<div class="box" style="margin:4px 0;padding:8px;display:flex;justify-content:space-between;gap:8px"><span>${esc(s.nama)} <small class="kosong">NIS ${esc(s.nis||'-')}${s.aktif?'':' · nonaktif'}</small></span><span>${act(s)}</span></div>`});return o}
 function rek(){const L=list(),ks=[...new Set(L.flatMap(k=>k.kelas))].sort((a,b)=>a.localeCompare(b,'id',{numeric:true}));
 return`<h2>Rekapitulasi per Kelas & Statistik</h2>${fbar()}<div class="fl np"><button class="b" onclick="window.print()">Cetak</button></div>${kop('REKAPITULASI LAYANAN BIMBINGAN DAN KONSELING')}
