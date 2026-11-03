@@ -47,8 +47,9 @@ body.lg header,body.lg nav{display:none}body.lg main{max-width:none;padding:0}
 .lgq{font:700 clamp(19px,2.4vw,30px)/1.25 Georgia,'Times New Roman',serif}.lgs{font-size:14px;opacity:.92;margin-top:6px}
 .lgf{display:flex;align-items:center;justify-content:center;padding:28px;background:var(--bg)}.lgp{width:100%;max-width:420px}
 .lgh{display:flex;gap:14px;align-items:center;margin-bottom:22px;color:var(--pr)}.lgh img{height:64px;width:auto}.lgh .ha::before{background:#d99a1e}
-.ttd4{display:flex;justify-content:space-between;gap:24px;margin-top:22px;text-align:center;color:#000}.ttd4>div{flex:1}.sgw{break-inside:avoid}.lgp #login{margin:0;max-width:none}.lgh .hk{font-size:clamp(14px,4.3vw,18px)}.lgh img{height:58px}
+.ttd4{display:flex;justify-content:space-between;gap:24px;margin-top:22px;text-align:center;color:#000}.ttd4>div{flex:1}.sgw{break-inside:avoid}.rt2{min-width:1500px}.dkm a{color:var(--pr)}.th{width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--bd);cursor:pointer;display:block;background:var(--pr2);margin-bottom:3px}.dkm{font-size:12px}.dkg{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}.dki{width:120px;font-size:11px;word-break:break-all}.dki img{width:120px;height:90px;object-fit:cover;border-radius:6px;border:1px solid var(--bd);display:block}.dki .b{padding:3px 8px;font-size:11px;margin-top:3px}.lgp #login{margin:0;max-width:none}.lgh .hk{font-size:clamp(14px,4.3vw,18px)}.lgh img{height:58px}
 @media(max-width:800px){.lgw{grid-template-columns:1fr}.lgh{gap:10px}.lgh img{height:46px}.lgh .hk{font-size:clamp(13px,4vw,16px)}.lgc{left:18px;right:18px;bottom:16px}.lgs{font-size:12px}}
+@media print{.rt,.rt.rt2{min-width:0}}
 </style></head><body>
 <header><div><div class="hk">BIMBINGAN DAN KONSELING</div><div class="hk">SMAN 15 BANDUNG</div><div class="ha"><b>SAHABAT BK</b></div><div class="ht">BK sahabat siswa, hadir untuk setiap cerita.</div></div><div id="who" class="np"></div></header>
 <nav id="nav" class="np"></nav><main id="app"></main><dialog id="dlg"></dialog>
@@ -69,7 +70,7 @@ const bad=r=>{if(r.error){alert('Gagal: '+r.error.message);return true}return fa
 async function all(t,sel='*'){let o=[],i=0;for(;;){const r=await sb.from(t).select(sel).order('id').range(i,i+999);if(r.error){alert('Gagal memuat '+t+': '+r.error.message);return o}o=o.concat(r.data);if(r.data.length<1000)return o;i+=1000}}
 async function load(){const[si,gu,ke,pg]=await Promise.all([all('siswa'),sb.from('profiles').select('*').order('nama'),all('kegiatan','*,kegiatan_peserta(siswa_id),kegiatan_kelas(kelas)'),sb.from('pengaturan').select('*').eq('id',1).single()]);
 S.siswa=si;S.guru=gu.data||[];S.set=pg.data||{};
-S.keg=ke.map(k=>({id:k.id,tgl:k.tanggal,sem:k.semester,guru:k.guru_id,str:k.strategi,bid:k.bidang||'',top:k.topik,lain:k.topik_lain||'',tujuan:k.tujuan||'',tl:k.tindak_lanjut||'',ket:k.keterangan||'',dok:k.dokumentasi_path||'',sis:k.kegiatan_peserta.map(p=>p.siswa_id),kelas:k.kegiatan_kelas.map(c=>c.kelas)}))}
+S.keg=ke.map(k=>({id:k.id,tgl:k.tanggal,sem:k.semester,guru:k.guru_id,str:k.strategi,bid:k.bidang||'',top:k.topik,lain:k.topik_lain||'',tujuan:k.tujuan||'',tl:k.tindak_lanjut||'',ket:k.keterangan||'',dok:k.dokumentasi_path||'',sis:k.kegiatan_peserta.map(p=>p.siswa_id),kelas:k.kegiatan_kelas.map(c=>c.kelas)}));await attachDok()}
 const list=()=>S.keg.filter(k=>(!FL.sem||k.sem==FL.sem)&&(!FL.d1||k.tgl>=FL.d1)&&(!FL.d2||k.tgl<=FL.d2)&&(!FL.kelas||k.kelas.includes(FL.kelas))&&(!FL.str||k.str==FL.str)&&(!FL.top||k.top==FL.top)&&(!FL.guru||k.guru==FL.guru)).sort((a,b)=>b.tgl.localeCompare(a.tgl));
 const opt=(a,v,all)=>(all?`<option value="">Semua</option>`:'')+a.map(x=>{const[val,t]=Array.isArray(x)?x:[x,x];return`<option value="${esc(val)}" ${val==v?'selected':''}>${esc(t)}</option>`}).join('');
 function fbar(){return`<div class="fl"><label>Semester<select onchange="FL.sem=this.value;go()">${opt(['Ganjil','Genap'].map(x=>[x,'Semester '+x]),FL.sem,1)}</select></label>
@@ -91,7 +92,7 @@ async function logout(){await sb.auth.signOut();U=null;login()}
 const MENU=[['dash','Dashboard'],['inp','Input Layanan'],['daf','Daftar Layanan'],['riw','Riwayat Layanan'],['rek','Rekapitulasi & Statistik'],['sis','Data Siswa'],['gur','Data Guru BK'],['set','Pengaturan']];
 function go(v){document.body.classList.remove('lg');if(v){V=v;hid=null}if(!U)return login();$('#who').innerHTML=`${esc(U.nama)} (${U.role=='koordinator'?'Koordinator BK':'Guru BK'}) <button class="b s" onclick="logout()">Keluar</button>`;
 $('#nav').innerHTML=MENU.filter(m=>isK()||!['gur','set'].includes(m[0])).map(m=>`<button class="${V==m[0]?'on':''}" onclick="go('${m[0]}')">${m[1]}</button>`).join('');
-$('#app').innerHTML=({dash,inp,daf,riw,rek,sis,gur,set})[V]();if(V=='inp')pil()}
+$('#app').innerHTML=({dash,inp,daf,riw,rek,sis,gur,set})[V]();if(V=='inp'){pil();dkRender()}if(V=='daf')fillThumbs()}
 const reload=async()=>{await load();go()};
 function dash(){const L=list(),ids=L.flatMap(k=>k.sis),c=cnt(ids.map(i=>({s:[i]})),x=>x.s);
 const top=Object.entries(c).sort((a,b)=>b[1]-a[1]||(sw(a[0])?.nama||'').localeCompare(sw(b[0])?.nama||'','id')).slice(0,5);
@@ -100,7 +101,7 @@ return`<h2>Dashboard</h2>${fbar()}<div class="k"><div><b>${S.siswa.filter(s=>s.a
 <div class="box"><h3>Lima siswa dengan layanan terbanyak</h3>${top.length?`<table><tr><th>Peringkat</th><th>Nama Siswa</th><th>Kelas</th><th>Jumlah Layanan</th></tr>${top.map(([id,n],i)=>`<tr><td>${i+1}</td><td>${esc(sw(id)?.nama)}</td><td>${esc(sw(id)?.kelas)}</td><td>${n}</td></tr>`).join('')}</table>`:'<div class="kosong">Belum ada data</div>'}</div>
 <small class="kosong">Kegiatan lintas kelas dihitung pada tiap kelas sasarannya; total kegiatan dihitung sekali.</small>`}
 function inp(){const k=ed?S.keg.find(x=>x.id==ed):{tgl:new Date().toISOString().slice(0,10),sem:'Ganjil',guru:U.id,str:'',bid:'',kelas:[],sis:[],top:'',lain:'',tujuan:'',tl:'',ket:'',dok:''};
-if(_ld!=(ed||'n')){sel=[...k.sis];cls='';_ld=ed||'n';if(!ed)CAT=''}_k=k;
+if(_ld!=(ed||'n')){sel=[...k.sis];cls='';_ld=ed||'n';if(!ed)CAT='';DK=[...(k.dk||[])];DEL=[];NF=[];NU=[];DELLEG=false}_k=k;
 return`<h2>${ed?'Edit':'Input'} Layanan</h2><div class="box"><div class="f">
 <label>Tanggal<input type="date" id="f_tgl" value="${k.tgl}"></label>
 <label>Semester<select id="f_sem">${opt(['Ganjil','Genap'],k.sem)}</select></label>
@@ -112,21 +113,56 @@ return`<h2>${ed?'Edit':'Input'} Layanan</h2><div class="box"><div class="f">
 <label id="lw">Topik spesifik<input id="f_lain" value="${esc(k.lain)}"></label></div><div id="pl" class="box"></div>
 <label>Tujuan Layanan<textarea id="f_tujuan">${esc(k.tujuan)}</textarea></label><label>Catatan/Isi (rahasia)<textarea id="f_cat">${esc(CAT)}</textarea></label>
 <label>Tindak Lanjut<textarea id="f_tl">${esc(k.tl)}</textarea></label><label>Keterangan<textarea id="f_ket">${esc(k.ket)}</textarea></label>
-<label>Dokumentasi (gambar/PDF, maks 5 MB)<input type="file" id="f_dok" accept="image/*,.pdf"></label>${k.dok?`<p><a href="#" onclick="dok('${esc(k.dok)}');return false">Lihat dokumentasi tersimpan</a></p>`:''}
+<div id="dkb" class="box"></div>
 <p><button class="b" id="sv" onclick="simpan()">Simpan kegiatan</button> ${ed?`<button class="b s" onclick="ed=null;_ld=null;go('daf')">Batal</button>`:''}</p></div>`}
 function pil(){const kl=$('#f_str').value==KL;$('#lw').style.display=$('#f_top').value=='Lainnya'?'':'none';
 if(kl)return $('#pl').innerHTML='<b>Bimbingan Klasikal dicatat berdasarkan kelas sasaran.</b> Pilih kelas di atas; peserta individual tidak diperlukan.';
 const L=S.siswa.filter(s=>s.aktif&&s.kelas==cls).sort(cmpS);
 $('#pl').innerHTML=`<b>Siswa terpilih (${sel.length}):</b> ${sel.map(i=>`<span class="chip">${esc(sw(i)?.nama)} (${esc(sw(i)?.kelas)}) <a href="#" onclick="tg('${i}');return false">×</a></span>`).join('')||'<span class="kosong">belum ada</span>'}<hr>${cls?L.map(s=>`<label style="display:block"><input type="checkbox" ${sel.includes(s.id)?'checked':''} onchange="tg('${s.id}')"> ${esc(s.nama)}</label>`).join('')||'<span class="kosong">Tidak ada siswa di kelas ini</span>':'<span class="kosong">Pilih kelas untuk menampilkan siswa</span>'}`}
 function tg(i){sel=sel.includes(i)?sel.filter(x=>x!=i):[...sel,i];pil()}
-async function dok(p){const r=await sb.storage.from('dokumentasi').createSignedUrl(p,120);if(bad(r))return;window.open(r.data.signedUrl,'_blank')}
+var DK=[],DEL=[],NF=[],NU=[],DELLEG=false;const SU={};
+const safeUrl=u=>/^https?:\/\//i.test(u||'')?u:'#';
+async function attachDok(){const by={};let all_=[],i=0;S.dokErr='';
+for(;;){const r=await sb.from('kegiatan_dokumentasi').select('*').order('id').range(i,i+999);if(r.error){S.dokErr=r.error.message;all_=[];break}all_=all_.concat(r.data);if(r.data.length<1000)break;i+=1000}
+all_.forEach(d=>(by[d.kegiatan_id]=by[d.kegiatan_id]||[]).push(d));
+S.keg.forEach(k=>{k.dk=(by[k.id]||[]).sort((a,b)=>(a.created_at||'').localeCompare(b.created_at||''));if(k.dok&&!k.dk.some(d=>d.path==k.dok))k.dk.unshift({id:'legacy',tipe:'foto',path:k.dok,nama:k.dok.split('/').pop().replace(/^\d+_/,''),legacy:true})})}
+async function fillThumbs(){const els=[...document.querySelectorAll('[data-p]')],need=[...new Set(els.map(e=>e.dataset.p))].filter(p=>!SU[p]||SU[p].t<Date.now());
+for(let i=0;i<need.length;i+=100){const r=await sb.storage.from('dokumentasi').createSignedUrls(need.slice(i,i+100),3600);(r.data||[]).forEach(x=>{if(x.signedUrl)SU[x.path]={u:x.signedUrl,t:Date.now()+3.3e6}})}
+els.forEach(e=>{const x=SU[e.dataset.p];if(x){if(e.tagName=='IMG')e.src=x.u;else e.href=x.u}})}
+function dkCell(k){const d=k.dk||[],f=d.filter(x=>x.tipe=='foto'),u=d.filter(x=>x.tipe=='tautan');if(!d.length)return'<span class="kosong">—</span>';
+return(f.length?`<img class="th" data-p="${esc(f[0].path)}" loading="lazy" alt="Foto dokumentasi" onclick="dokView('${k.id}')">`:'')+`<div class="dkm">${f.length?`<a href="#" onclick="dokView('${k.id}');return false">${f.length>1?'Lihat '+f.length+' foto':'Lihat foto'}</a>`:''}${f.length&&u.length?'<br>':''}${u.length==1?`<a href="${esc(safeUrl(u[0].url))}" target="_blank" rel="noopener">Buka Dokumentasi</a>`:u.length?`<a href="#" onclick="dokView('${k.id}');return false">Buka Dokumentasi (${u.length})</a>`:''}</div>`}
+function dokView(id){const k=S.keg.find(x=>x.id==id),d=k.dk||[],f=d.filter(x=>x.tipe=='foto'),u=d.filter(x=>x.tipe=='tautan');
+$('#dlg').innerHTML=`<h3>Dokumentasi</h3><p class="kosong">${esc(k.str)} · ${tglF(k.tgl)} · ${esc(gn(k.guru))} · Kelas ${esc(k.kelas.join(', '))}</p>${f.length?`<b>Foto (${f.length})</b><div class="dkg">${f.map(x=>`<div class="dki"><a data-p="${esc(x.path)}" target="_blank" rel="noopener"><img data-p="${esc(x.path)}" alt="${esc(x.nama)}"></a><small>${esc(x.nama)}</small></div>`).join('')}</div>`:''}${u.length?`<p><b>Tautan (${u.length})</b></p><ul>${u.map(x=>`<li><a href="${esc(safeUrl(x.url))}" target="_blank" rel="noopener">${esc(x.url)}</a></li>`).join('')}</ul>`:''}${d.length?'':'<p class="kosong">Belum ada dokumentasi.</p>'}<p><button class="b" onclick="$('#dlg').close()">Tutup</button></p>`;
+if(!$('#dlg').open)$('#dlg').showModal();fillThumbs()}
+function dkRender(){const el=$('#dkb');if(!el)return;const f=DK.filter(d=>d.tipe=='foto'),u=DK.filter(d=>d.tipe=='tautan');
+el.innerHTML=`<b>Dokumentasi</b> <span class="kosong">(opsional)</span>${S.dokErr?'<p style="color:var(--dn)">Fitur multifoto belum aktif: jalankan SQL dokumentasi di Supabase.</p>':''}
+<p><label>Foto (JPG/JPEG/PNG, maks. 10 foto, tiap file maks. 10 MB)<input type="file" id="f_dok" accept="image/jpeg,image/png" multiple onchange="addFiles(this)"></label> <span class="kosong">${f.length+NF.length} foto</span></p>
+<div class="dkg">${f.map(d=>`<div class="dki"><img data-p="${esc(d.path)}" alt=""><small>${esc(d.nama)}</small><button class="d b" onclick="rmDk('${d.id}')">Hapus</button></div>`).join('')}${NF.map((x,i)=>`<div class="dki"><img src="${x.prev}" alt=""><small>${esc(x.nama)} (baru)</small><button class="d b" onclick="NF.splice(${i},1);dkRender()">Hapus</button></div>`).join('')}</div>
+<p><label>Tautan Dokumentasi (mis. folder Google Drive)<span><input id="f_url" placeholder="https://..." style="width:min(420px,100%)" onkeydown="if(event.key=='Enter')addUrl()"> <button class="b s" onclick="addUrl()">Tambah tautan</button></span></label></p>
+<ul>${u.map(d=>`<li><a href="${esc(safeUrl(d.url))}" target="_blank" rel="noopener">${esc(d.url)}</a> <button class="d b" onclick="rmDk('${d.id}')">Hapus</button></li>`).join('')}${NU.map((x,i)=>`<li>${esc(x)} <span class="kosong">(baru)</span> <button class="d b" onclick="NU.splice(${i},1);dkRender()">Hapus</button></li>`).join('')}</ul>
+<small class="kosong">Perubahan dokumentasi tersimpan saat Anda menekan Simpan kegiatan. Untuk tautan Google Drive, batasi izin berbagi hanya untuk pihak yang berwenang.</small>`;fillThumbs()}
+async function compress(f){const bm=await createImageBitmap(f,{imageOrientation:'from-image'}),sc=Math.min(1,1600/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=Math.round(bm.width*sc);c.height=Math.round(bm.height*sc);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(bm,0,0,c.width,c.height);return new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error('x')),'image/jpeg',.85))}
+async function addFiles(el){const fs=[...el.files];el.value='';let room=10-DK.filter(d=>d.tipe=='foto').length-NF.length;const msg=[];
+for(const f of fs){if(!/^image\/(jpeg|png)$/.test(f.type)){msg.push(f.name+': format tidak didukung (hanya JPG, JPEG, PNG)');continue}
+if(f.size>1e7){msg.push(f.name+': ukuran melebihi 10 MB');continue}if(room<=0){msg.push(f.name+': melebihi batas 10 foto per kegiatan');continue}
+try{const blob=await compress(f);NF.push({blob,nama:f.name,prev:URL.createObjectURL(blob)});room--}catch(e){msg.push(f.name+': gagal diproses')}}
+if(msg.length)alert(msg.join('\n'));dkRender()}
+function addUrl(silent){const i=$('#f_url'),v=i.value.trim();if(!v)return true;let ok=false;try{const u=new URL(v);ok=/^https?:$/.test(u.protocol)&&!!u.hostname}catch(e){}
+if(!ok){alert('Tautan tidak valid. Gunakan alamat lengkap yang diawali http:// atau https://');return false}
+if(NU.includes(v)||DK.some(d=>d.url==v)){alert('Tautan ini sudah ada.');return false}NU.push(v);i.value='';if(!silent)dkRender();return true}
+function rmDk(id){const d=DK.find(x=>x.id==id);if(!d||!confirm('Hapus item dokumentasi ini? Penghapusan berlaku setelah Anda menekan Simpan kegiatan.'))return;if(d.legacy)DELLEG=true;else DEL.push(d);DK=DK.filter(x=>x!==d);dkRender()}
+async function saveDocs(id){let ok=true;const bk=sb.storage.from('dokumentasi');
+try{for(let i=0;i<NF.length;i++){const f=NF[i],p=`${U.id}/${id}/${Date.now()}_${i}.jpg`,u=await bk.upload(p,f.blob,{contentType:'image/jpeg'});if(u.error){alert('Gagal mengunggah '+f.nama+': '+u.error.message);ok=false;continue}
+const r=await sb.from('kegiatan_dokumentasi').insert({kegiatan_id:id,tipe:'foto',path:p,nama:f.nama});if(r.error){alert('Gagal menyimpan foto '+f.nama+': '+r.error.message);ok=false;await bk.remove([p])}}
+if(NU.length){const r=await sb.from('kegiatan_dokumentasi').insert(NU.map(u=>({kegiatan_id:id,tipe:'tautan',url:u})));if(r.error){alert('Gagal menyimpan tautan: '+r.error.message);ok=false}}
+if(DEL.length){const r=await sb.from('kegiatan_dokumentasi').delete().in('id',DEL.map(d=>d.id));if(r.error){alert('Gagal menghapus dokumentasi: '+r.error.message);ok=false}else{const ps=DEL.filter(d=>d.path).map(d=>d.path);if(ps.length)await bk.remove(ps)}}
+if(DELLEG&&_k.dok)await bk.remove([_k.dok])}catch(e){alert('Kesalahan dokumentasi: '+e.message);ok=false}return ok}
 async function simpan(){const v=i=>$('#f_'+i).value,kl=v('str')==KL;
 if(!v('tgl')||!v('guru')||!v('str')||!v('top'))return alert('Lengkapi tanggal, Guru BK, Strategi Layanan, dan Topik Masalah.');
 if(kl&&!v('kelas'))return alert('Pilih kelas sasaran.');if(!kl&&!sel.length)return alert('Pilih minimal satu siswa.');
 if(v('top')=='Lainnya'&&!v('lain').trim())return alert('Tuliskan topik secara spesifik.');
-const f=$('#f_dok').files[0];if(f&&f.size>5e6)return alert('Ukuran dokumentasi melebihi 5 MB.');
-$('#sv').disabled=true;let path=_k.dok||null;
-if(f){path=`${U.id}/${Date.now()}_${f.name.replace(/[^\w.-]/g,'_')}`;if(bad(await sb.storage.from('dokumentasi').upload(path,f))){$('#sv').disabled=false;return}}
+if($('#f_url').value.trim()&&!addUrl(true))return;
+$('#sv').disabled=true;const path=DELLEG?null:(_k.dok||null);
 const row={tanggal:v('tgl'),semester:v('sem'),guru_id:v('guru'),strategi:v('str'),bidang:v('bid')||null,topik:v('top'),topik_lain:v('top')=='Lainnya'?v('lain'):null,tujuan:v('tujuan'),tindak_lanjut:v('tl'),keterangan:v('ket'),dokumentasi_path:path};
 let id=ed,r;if(ed)r=await sb.from('kegiatan').update(row).eq('id',ed);else{r=await sb.from('kegiatan').insert(row).select('id').single();id=r.data?.id}
 if(bad(r)){$('#sv').disabled=false;return}
@@ -135,32 +171,33 @@ for(const t of['kegiatan_peserta','kegiatan_kelas'])if(bad(await sb.from(t).dele
 if(!kl&&bad(await sb.from('kegiatan_peserta').insert(sel.map(s=>({kegiatan_id:id,siswa_id:s})))))return;
 if(bad(await sb.from('kegiatan_kelas').insert(kelas.map(c=>({kegiatan_id:id,kelas:c})))))return;
 if(bad(await sb.from('kegiatan_catatan').upsert({kegiatan_id:id,catatan:v('cat')})))return;
-ed=null;_ld=null;sel=[];alert('Kegiatan tersimpan.');await load();go('daf')}
+const dm=await saveDocs(id);ed=null;_ld=null;sel=[];alert(dm?'Kegiatan tersimpan.':'Kegiatan tersimpan, tetapi dokumentasi belum seluruhnya tersimpan. Buka Edit untuk mencoba lagi.');await load();go('daf')}
 const can=k=>isK()||k.guru==U.id;
 const getCat=async id=>(await sb.from('kegiatan_catatan').select('catatan').eq('kegiatan_id',id).maybeSingle()).data?.catatan||'';
 async function editK(id){CAT=await getCat(id);ed=id;_ld=null;go('inp')}
+const dafWarn=()=>S.dokErr?'<div class="box np" style="color:var(--dn)">Fitur dokumentasi multifoto belum aktif (SQL belum dijalankan di Supabase).</div>':'';
 const dafList=()=>list().filter(k=>!q||JSON.stringify([k.str,tp(k),k.tujuan,k.sis.map(i=>sw(i)?.nama),gn(k.guru)]).toLowerCase().includes(q.toLowerCase()));
 function daf(){const L=dafList(),ids=[...new Set(L.map(k=>k.guru))],pj=ids.length==1?S.guru.find(g=>g.id==ids[0]):(!isK()?(S.guru.find(g=>g.id==U.id)||U):null);
 const kps=sgn('Mengetahui,<br>Kepala SMA Negeri 15 Bandung',S.set.kepsek,S.set.nip_kepsek);
 const ttdH=pj&&pj.role=='koordinator'?`<div class="ttd4">${kps}${sgn('<br>GURU BK PELAKSANA /<br>KOORDINATOR BK',pj.nama||S.set.koordinator,pj.nip||S.set.nip_koordinator)}</div>`:`<div class="ttd4">${kps}${sgn('<br>GURU BK PELAKSANA',pj&&pj.nama,pj&&pj.nip)}${sgn('<br>KOORDINATOR BK',S.set.koordinator,S.set.nip_koordinator)}</div>`;
 const W=[8,6,11,12,7,7,17,11,11,10];
-return`<div id="rp"><h2 class="np">Daftar Layanan</h2>${fbar()}<div class="fl np"><input placeholder="Cari…" value="${esc(q)}" onchange="q=this.value;go()"><button class="b" onclick="window.print()">Cetak</button><button class="b s" onclick="ekspor()">Ekspor Excel</button></div>
+return`<div id="rp"><h2 class="np">Daftar Layanan</h2>${dafWarn()}${fbar()}<div class="fl np"><input placeholder="Cari…" value="${esc(q)}" onchange="q=this.value;go()"><button class="b" onclick="window.print()">Cetak</button><button class="b s" onclick="ekspor()">Ekspor Excel</button></div>
 ${kopR('PEMERINTAH DAERAH PROVINSI JAWA BARAT','DINAS PENDIDIKAN','SMA NEGERI 15 BANDUNG')}
 <h3 class="pk" style="text-align:center;color:#000;margin:6px 0">LAPORAN DAFTAR LAYANAN<br>BIMBINGAN DAN KONSELING</h3>
 <p class="pk" style="color:#000;font-size:12px;margin:0 0 8px">Periode: ${FL.d1?tglF(FL.d1):'-'} s.d. ${FL.d2?tglF(FL.d2):'-'}${FL.sem?' · Semester '+FL.sem:''}${FL.kelas?' · Kelas '+esc(FL.kelas):''} · Dicetak: ${new Date().toLocaleDateString('id-ID')}</p>
-<div class="box">${L.length?`<table class="rt"><colgroup>${W.map(w=>`<col style="width:${w}%">`).join('')}<col class="np" style="width:10%"></colgroup><thead><tr><th>Tanggal</th><th>Sem.</th><th>Guru BK</th><th>Strategi</th><th>Bidang</th><th>Kelas</th><th>Siswa</th><th>Topik</th><th>Tujuan</th><th>Tindak Lanjut</th><th class="np"></th></tr></thead><tbody>${L.map(k=>`<tr><td>${tglF(k.tgl)}</td><td>${k.sem}</td><td>${esc(gn(k.guru))}</td><td>${esc(k.str)}</td><td>${esc(k.bid)}</td><td>${esc(k.kelas.join(', '))}</td><td>${esc(k.sis.map(i=>sw(i)?.nama).join('; '))||'-'}</td><td>${esc(tp(k))}</td><td>${esc(k.tujuan)}</td><td>${esc(k.tl)}</td><td class="np"><button class="b s" onclick="det('${k.id}')">Detail</button> ${can(k)?`<button class="b s" onclick="editK('${k.id}')">Edit</button> <button class="d b" onclick="hps('${k.id}')">Hapus</button>`:''}</td></tr>`).join('')}</tbody></table>`:'<div class="kosong">Belum ada data</div>'}</div><div class="pk sgw">${ttdH}<div style="text-align:center;font-size:11px;color:#000;margin-top:10px">Tahun Ajaran ${esc(S.set.tahun_ajaran)}</div></div></div>`}
-async function det(id){const k=S.keg.find(x=>x.id==id),c=can(k)?await getCat(id):null;$('#dlg').innerHTML=`<h3>${esc(k.str)} – ${k.tgl}</h3><p>Guru BK: ${esc(gn(k.guru))}<br>Kelas: ${esc(k.kelas.join(', '))}<br>Topik: ${esc(tp(k))}<br>Tujuan: ${esc(k.tujuan)}<br>Tindak lanjut: ${esc(k.tl)}<br>Keterangan: ${esc(k.ket)}</p>${c!==null?`<p><b>Catatan:</b> ${esc(c)||'-'}</p>`:'<p class="kosong">Catatan konseling hanya untuk pencatat dan Koordinator BK.</p>'}${k.dok?`<p><a href="#" onclick="dok('${esc(k.dok)}');return false">Dokumentasi</a></p>`:''}<button class="b" onclick="$('#dlg').close()">Tutup</button>`;$('#dlg').showModal()}
+<div class="box">${L.length?`<table class="rt rt2"><colgroup>${W.map(w=>`<col style="width:${w}%">`).join('')}<col class="np" style="width:12%"><col class="np" style="width:10%"></colgroup><thead><tr><th>Tanggal</th><th>Sem.</th><th>Guru BK</th><th>Strategi</th><th>Bidang</th><th>Kelas</th><th>Siswa</th><th>Topik</th><th>Tujuan</th><th>Tindak Lanjut</th><th class="np">Dokumentasi</th><th class="np"></th></tr></thead><tbody>${L.map(k=>`<tr><td>${tglF(k.tgl)}</td><td>${k.sem}</td><td>${esc(gn(k.guru))}</td><td>${esc(k.str)}</td><td>${esc(k.bid)}</td><td>${esc(k.kelas.join(', '))}</td><td>${esc(k.sis.map(i=>sw(i)?.nama).join('; '))||'-'}</td><td>${esc(tp(k))}</td><td>${esc(k.tujuan)}</td><td>${esc(k.tl)}</td><td class="np">${dkCell(k)}</td><td class="np"><button class="b s" onclick="det('${k.id}')">Detail</button> ${can(k)?`<button class="b s" onclick="editK('${k.id}')">Edit</button> <button class="d b" onclick="hps('${k.id}')">Hapus</button>`:''}</td></tr>`).join('')}</tbody></table>`:'<div class="kosong">Belum ada data</div>'}</div><div class="pk sgw">${ttdH}<div style="text-align:center;font-size:11px;color:#000;margin-top:10px">Tahun Ajaran ${esc(S.set.tahun_ajaran)}</div></div></div>`}
+async function det(id){const k=S.keg.find(x=>x.id==id),c=can(k)?await getCat(id):null;$('#dlg').innerHTML=`<h3>${esc(k.str)} – ${k.tgl}</h3><p>Guru BK: ${esc(gn(k.guru))}<br>Kelas: ${esc(k.kelas.join(', '))}<br>Topik: ${esc(tp(k))}<br>Tujuan: ${esc(k.tujuan)}<br>Tindak lanjut: ${esc(k.tl)}<br>Keterangan: ${esc(k.ket)}</p>${c!==null?`<p><b>Catatan:</b> ${esc(c)||'-'}</p>`:'<p class="kosong">Catatan konseling hanya untuk pencatat dan Koordinator BK.</p>'}${(k.dk||[]).length?`<p><button class="b s" onclick="dokView('${k.id}')">Lihat Dokumentasi (${k.dk.length})</button></p>`:''}<button class="b" onclick="$('#dlg').close()">Tutup</button>`;$('#dlg').showModal()}
 async function hps(id){if(confirm('Hapus kegiatan ini?')&&!bad(await sb.from('kegiatan').delete().eq('id',id)))reload()}
 const tglF=t=>t?t.split('-').reverse().join('/'):'';
 async function ekspor(){const L=dafList();if(!L.length)return alert('Tidak ada data untuk diekspor.');
-const paths=[...new Set(L.map(k=>k.dok).filter(Boolean))],urls={};
+const ph1=k=>{const f=(k.dk||[]).find(d=>d.tipe=='foto');return f?f.path:''},paths=[...new Set(L.map(ph1).filter(Boolean))],urls={};
 if(paths.length){const r=await sb.storage.from('dokumentasi').createSignedUrls(paths,86400);(r.data||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
 const H=['No.','Tanggal Pelaksanaan','Nama Guru BK','Nama Siswa','Kelas','Strategi Layanan','Bidang Layanan','Topik Layanan','Materi Layanan','Tindak Lanjut','Dokumentasi'],rows=[],docs=[];
-L.forEach(k=>{const nf=k.dok?k.dok.split('/').pop().replace(/^\d+_/,''):'',ss=k.sis.map(i=>sw(i)).filter(Boolean),kl=[...new Set(ss.map(x=>x.kelas))],multi=kl.length>1;
-rows.push([rows.length+1,tglF(k.tgl),gn(k.guru),ss.map(x=>multi?x.nama+' ('+x.kelas+')':x.nama).join('; '),ss.length?kl.join(', '):k.kelas.join(', '),k.str,k.bid,tp(k),k.tujuan,k.tl,nf]);docs.push(k.dok)});
+L.forEach(k=>{const dk=k.dk||[],nfo=dk.filter(d=>d.tipe=='foto').length,lk=dk.filter(d=>d.tipe=='tautan').map(d=>d.url),nf=[nfo?nfo+' foto':'',...lk].filter(Boolean).join('; '),ss=k.sis.map(i=>sw(i)).filter(Boolean),kl=[...new Set(ss.map(x=>x.kelas))],multi=kl.length>1;
+rows.push([rows.length+1,tglF(k.tgl),gn(k.guru),ss.map(x=>multi?x.nama+' ('+x.kelas+')':x.nama).join('; '),ss.length?kl.join(', '):k.kelas.join(', '),k.str,k.bid,tp(k),k.tujuan,k.tl,nf]);docs.push(lk[0]||(ph1(k)&&urls[ph1(k)])||'')});
 const ws=XLSX.utils.aoa_to_sheet([H,...rows]);
 ws['!cols']=[5,14,22,26,12,30,14,30,38,30,30].map(wch=>({wch}));
-docs.forEach((d,i)=>{if(d&&urls[d]){const c=ws['K'+(i+2)];if(c)c.l={Target:urls[d],Tooltip:'Tautan berlaku 24 jam'}}});
+docs.forEach((d,i)=>{if(d){const c=ws['K'+(i+2)];if(c)c.l={Target:d}}});
 const rs=XLSX.utils.aoa_to_sheet([['Jumlah Kegiatan Layanan',L.length],['Jumlah Siswa Terlayani',new Set(L.flatMap(k=>k.sis)).size]]);rs['!cols']=[{wch:32},{wch:12}];
 const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Daftar Layanan');XLSX.utils.book_append_sheet(wb,rs,'Ringkasan');
 XLSX.writeFile(wb,'Daftar_Layanan_SAHABAT_BK.xlsx')}
